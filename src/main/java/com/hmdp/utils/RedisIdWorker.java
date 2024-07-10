@@ -28,8 +28,7 @@ public class RedisIdWorker {
         // 2.2 自增长,每次递增1
         long count = stringRedisTemplate.opsForValue().increment("icr:" + keyPrefix + ":" + date);
 
-
-        // 3. 拼接并返回
+        // 3. 拼接并返回(借助位运算！！)
         return timestamp << COUNT_BITS | count;
     }
 

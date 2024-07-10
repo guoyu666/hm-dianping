@@ -170,7 +170,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             // 返回一个错误信息
             return null;
         }
-        // 4. 不存在，根据ID查询数据库
+        // 4. 走到这里就表示缓存中Redis中的数据不存在，根据ID查询数据库
         Shop shop = getById(id);
         // 5. 不存在，返回错误
         if (shop == null) {

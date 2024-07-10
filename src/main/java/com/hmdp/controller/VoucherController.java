@@ -14,7 +14,7 @@ import javax.annotation.Resource;
  * </p>
  *
  * @author GuoYu
- * @since 2041-06-12
+ * @since 2024-06-12
  */
 @RestController
 @RequestMapping("/voucher")
