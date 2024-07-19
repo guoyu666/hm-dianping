@@ -121,18 +121,18 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             return null;
         }
         // 4. 实现缓存重建
-        // 4.1 获取互斥锁
+        // 4.1 获取互斥锁（这里不能使用之前的key，因为之前的key是缓存的key，这里我们要用锁的key）
         String mutexKey = LOCK_SHOP_KEY + id;
         Shop shop = null;
         try {
             boolean isLock = tryLock(mutexKey);
-            // 4.2 判断是否获取成功
+            // 4.2 判断是否获取锁成功
             if (!isLock){
                 // 4.3 失败，则休眠并重试
                 Thread.sleep(50);
                 return queryWithMutex(id);
             }
-            // 4.4 获取成功，根据ID查询数据库
+            // 4.4 获取锁成功，根据ID查询数据库
             shop = getById(id);
             // 模拟重建的延时
             Thread.sleep(200);
@@ -179,7 +179,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             // 7. 返回错误信息
             return null;
         }
-        // 6. 存在，写入Redis,并设置超时时间
+        // 6. 存在，则转换为JSON字符串写入Redis,并设置超时时间
         stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(shop),CACHE_SHOP_TTL, TimeUnit.MINUTES);
         // 7. 返回结果
         return shop;
