@@ -73,7 +73,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             // 4.验证码错误，返回错误信息
             return Result.fail("验证码错误");
         }
-        // 5.验证码正确，查询用户信息
+        // 5.验证码正确，查询用户信息（使用MyBatisPlus的查询方法等价于：select * from tb_user where phone = ?）
         User user = query().eq("phone", phone).one();
         if (user == null) {
             // 6.用户不存在，创建新用户并保存

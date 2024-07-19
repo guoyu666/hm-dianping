@@ -7,6 +7,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 /*
     拦截器属于SpringMVC中的内容，如果有遗忘，建议回看Notion中的笔记！！
+    该拦截器作用：实现校验登录状态，如果用户未登录，则拦截请求，并返回401状态码。
  */
 public class LoginInterceptor implements HandlerInterceptor {
 

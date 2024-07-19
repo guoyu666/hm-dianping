@@ -17,6 +17,5 @@ public class RedissonConfig {
         config.useSingleServer().setAddress("redis://localhost:6379").setPassword("13801874064guoyu");
         // 创建RedissonClient对象
         return Redisson.create(config);
-
     }
 }
