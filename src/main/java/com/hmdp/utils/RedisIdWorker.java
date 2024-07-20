@@ -3,6 +3,7 @@ package com.hmdp.utils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -14,6 +15,7 @@ public class RedisIdWorker {
     private static final long BEGIN_TIMESTAMP = 1704067200L;
     private static final int COUNT_BITS = 32;
 
+    @Resource
     private StringRedisTemplate stringRedisTemplate;
 
     public long nextId(String keyPrefix) {
