@@ -62,10 +62,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             return Result.fail("库存不足");
         }
         Long userId = UserHolder.getUser().getId();
-        // 创建锁对象
-        // SimpleRedisLock lock = new SimpleRedisLock("order:" + userId, stringRedisTemplate);
-
-        // 获取锁（可重入），指定锁的名称
+        // 创建锁对象，这里我们使用redisson来实现分布式锁
         RLock lock = redissonClient.getLock("lock:order" + userId);
         // 尝试获取锁，参数分别是：获取锁的最大等待时间（期间会重试），锁自动释放时间，时间单位
         boolean isLock = lock.tryLock();    // 这里我们使用无参数的版本！！
