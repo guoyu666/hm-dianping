@@ -161,19 +161,20 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     }
 
     // 缓存穿透函数封装
-    public Shop queryWithPassThrough(Long id) {
+    public Result queryWithPassThrough(Long id) {
         String key = CACHE_SHOP_KEY + id;
         // 1. 从Redis中查询缓存
         String shopJson = stringRedisTemplate.opsForValue().get(key);
         // 2. 判断是否存在
         if (StrUtil.isNotBlank(shopJson)) {
             // 3. 存在，直接返回
-            return JSONUtil.toBean(shopJson, Shop.class);
+            Shop shop = JSONUtil.toBean(shopJson, Shop.class);
+            return Result.ok(shop);
         }
         // 判断命中的是否是空值
         if (shopJson != null) {
             // 返回一个错误信息
-            return null;
+            return Result.fail("店铺不存在!!");
         }
         // 4. 走到这里就表示缓存中Redis中的数据不存在，根据ID查询数据库
         Shop shop = getById(id);
@@ -187,7 +188,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         // 6. 存在，则转换为JSON字符串写入Redis,并设置超时时间
         stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(shop), CACHE_SHOP_TTL, TimeUnit.MINUTES);
         // 7. 返回结果
-        return shop;
+        return Result.ok(shop);
     }
 
     // 获取锁
