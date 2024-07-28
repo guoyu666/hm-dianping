@@ -42,33 +42,15 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
     @Override
     public Result queryById(Long id) {
-        String key = CACHE_SHOP_KEY + id;
-        // 1. 从Redis中查询缓存
-        String shopJson = stringRedisTemplate.opsForValue().get(key);
-        // 2. 判断是否存在,  如果不为空，则转换为shop对象并返回
-        if (StrUtil.isNotBlank(shopJson)) {
-            // 3. 存在，直接返回
-            Shop shop = JSONUtil.toBean(shopJson, Shop.class);
-            return Result.ok(shop);
-        }
-        // 如果查询到的是空字符串，则说明是我们缓存的空数据(因为前面的isNotBlank的非空白的定义是：1.不为null; 2.不为空字符串"")
-        // 这里当判断不等于null时，那就表示一定是为空字符串，所以判断店铺不存在
-        if (shopJson != null) {
-            // 返回一个错误信息
-            return Result.fail("店铺不存在!!");
-        }
-        // 4. 走到这里就表示缓存中Redis中的数据不存在，根据ID查询数据库
-        Shop shop = getById(id);
-        // 5. 不存在，返回错误
+        // 缓存穿透
+        // Result result = queryWithPassThrough(id);
+
+        Shop shop = queryWithMutex(id);
         if (shop == null) {
-            // 6. 将空值写入redis
-            stringRedisTemplate.opsForValue().set(key, "", CACHE_NULL_TTL, TimeUnit.MINUTES);
-            // 7. 返回错误信息
-            return Result.fail("店铺不存在!!");
+            Result.fail("店铺不存在!!");
         }
-        // 6. 存在，则转换为JSON字符串写入Redis,并设置超时时间
-        stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(shop), CACHE_SHOP_TTL, TimeUnit.MINUTES);
-        // 7. 返回结果
+
+        // 返回
         return Result.ok(shop);
     }
 
@@ -129,7 +111,8 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             // 3. 存在，直接返回
             return JSONUtil.toBean(shopJson, Shop.class);
         }
-        // 判断命中的是否是空值
+        // 如果查询到的是空字符串，则说明是我们缓存的空数据(因为前面的isNotBlank的非空白的定义是：1.不为null; 2.不为空字符串"")
+        // 这里当判断不等于null时，那就表示一定是为空字符串，所以判断店铺不存在
         if (shopJson != null) {
             // 返回一个错误信息
             return null;
@@ -204,6 +187,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     // 获取锁
     private boolean tryLock(String key) {
         Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", 10, TimeUnit.SECONDS);
+        // 为了避免返回值为null，我们这里使用了BooleanUtil工具类
         return BooleanUtil.isTrue(flag);
     }
 
