@@ -45,7 +45,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         // 缓存穿透
         // Result result = queryWithPassThrough(id);
 
-        Shop shop = queryWithMutex(id);
+        Shop shop = queryWithLogicalExpire(id);
         if (shop == null) {
             Result.fail("店铺不存在!!");
         }
@@ -54,6 +54,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         return Result.ok(shop);
     }
 
+    // 这里需要申明一个线程池，因为下面我们需要新建一个线程来完成重构缓存
     public static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(10);
 
 
@@ -64,7 +65,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         String shopJson = stringRedisTemplate.opsForValue().get(key);
         // 2. 判断是否存在
         if (StrUtil.isBlank(shopJson)) {
-            // 3. 不存在，直接返回
+            // 3. 不存在，直接返回空
             return null;
         }
         // 4. 命中，需要先把json反序列化为对象
@@ -74,7 +75,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         LocalDateTime expireTime = redisData.getExpireTime();
         // 5. 判断是否过期
         if (expireTime.isAfter(LocalDateTime.now())) {
-            // 5.1 为过期
+            // 5.1 未过期，直接返回店铺信息
             return shop;
         }
         // 5.2 过期，需要重建缓存
@@ -196,6 +197,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         stringRedisTemplate.delete(key);
     }
 
+    // 利用此方法进行缓存预热
     public void saveShop2Redis(Long id, Long expireSeconds) throws InterruptedException {
         // 1. 查询店铺数据
         Shop shop = getById(id);
