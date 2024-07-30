@@ -66,7 +66,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         RLock lock = redissonClient.getLock("lock:order" + userId);
         // 尝试获取锁，参数分别是：获取锁的最大等待时间（期间会重试），锁自动释放时间，时间单位
         boolean isLock = lock.tryLock();    // 这里我们使用无参数的版本！！
-        if (!isLock){
+        if (!isLock) {
             // 获取锁失败，返回错误或重试
             return Result.fail("不允许重复下单！！");
         }
