@@ -50,7 +50,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         // 3.符合，生成验证码
         String code = RandomUtil.randomNumbers(6);
-        // 4.保存验证码到redis，给key加一个业务前缀以示区分，并设置过期时间
+        // 4.保存验证码到redis缓存中，给key加一个业务前缀以示区分，并设置过期时间
         stringRedisTemplate.opsForValue().set(LOGIN_CODE_KEY + phone, code, LOGIN_CODE_TTL, TimeUnit.MINUTES);
         // 5.发送验证码
         log.debug("发送短信验证码成功，验证码: {}", code);
@@ -74,6 +74,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             return Result.fail("验证码错误");
         }
         // 5.验证码正确，查询用户信息（使用MyBatisPlus的查询方法等价于：select * from tb_user where phone = ?）
+        // 我们可以直接使用query(),这是因为由于我们继承了MyBatisPlus中的ServiceImpl,里面自带了这个方法
         User user = query().eq("phone", phone).one();
         if (user == null) {
             // 6.用户不存在，创建新用户并保存
@@ -84,6 +85,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String token = UUID.randomUUID().toString(true);
         // 7.2 将User对象转为HashMap存储
         UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
+        // 确保存储数据到Map当中的时候，确保数据里的值都是以String类型的形式存储进去的（即Map当中的key和value都是String类型）
         Map<String, Object> userMap = BeanUtil.beanToMap(userDTO, new HashMap<>(), CopyOptions.create().setIgnoreNullValue(true).setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
         // 7.3 存储
         // 使用putAll方法将HashMap中的数据批量保存到redis中
@@ -92,7 +94,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 7.4 设置token有效期
         stringRedisTemplate.expire(tokenKey, LOGIN_USER_TTL, TimeUnit.MINUTES);
 
-        // 返回token给客户端
+        // 返回token给客户端，当我们校验用户是否登录时，会去携带着token进行访问
+        // Ajax请求携带authorization请求头，即携带token；服务端获取authorization，拿到token
         return Result.ok(token);
     }
 

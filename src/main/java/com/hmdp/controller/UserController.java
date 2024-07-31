@@ -37,6 +37,7 @@ public class UserController {
     @PostMapping("code")
     public Result sendCode(@RequestParam("phone") String phone, HttpSession session) {
         // 发送短信验证码并保存验证码
+        // 为什么需要session？因为后面我们需要把验证码保存在session中
         return userService.sendCode(phone, session);
     }
 
@@ -61,6 +62,10 @@ public class UserController {
         return Result.fail("功能未完成");
     }
 
+    /**
+     * 登录的校验
+     * @return
+     */
     @GetMapping("/me")
     public Result me(){
         // 获取当前登录的用户并返回
