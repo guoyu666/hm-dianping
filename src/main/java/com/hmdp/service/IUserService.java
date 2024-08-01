@@ -1,10 +1,7 @@
 package com.hmdp.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.hmdp.dto.LoginFormDTO;
-import com.hmdp.dto.Result;
 import com.hmdp.entity.User;
-import jakarta.servlet.http.HttpSession;
 
 /**
  * <p>
@@ -16,7 +13,10 @@ import jakarta.servlet.http.HttpSession;
  */
 public interface IUserService extends IService<User> {
 
-    Result sendCode(String phone, HttpSession session);
+    // 根据手机号查找
+    User findByPhone(String phone);
 
-    Result login(LoginFormDTO loginForm, HttpSession session);
+    // 创建用户
+    User creatUser(String phone);
+
 }
