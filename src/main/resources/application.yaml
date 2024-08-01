@@ -21,6 +21,25 @@ spring:
           time-between-eviction-runs: 10s
   jackson:
     default-property-inclusion: non_null # JSON处理时忽略非空字段
+  mail:
+    # smtp服务主机
+    host: smtp.qq.com
+    #  服务协议
+    protocol: smtp
+    # 编码集
+    default-encoding: UTF-8
+    # 发送邮件的账户
+    username: 1262425287@qq.com
+    # 授权码
+    password: wklrfqaftwjmieeg
+    test-connection: true
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
 mybatis-plus:
   type-aliases-package: com.hmdp.entity # 别名扫描包
 logging:
