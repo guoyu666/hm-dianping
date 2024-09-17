@@ -5,12 +5,12 @@ spring:
     name: hmdp
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/redis_test?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/hmdp_test?useSSL=false&serverTimezone=UTC
     username: root
     password: 13801874064guoyu
   data:
     redis:
-      host: localhost
+      host: 192.168.255.129 # 这里使用的虚拟机中Linux的IP地址（根据自己的情况设置对应的ip地址即可）
       port: 6379
       password: 13801874064guoyu
       lettuce:

@@ -13,8 +13,8 @@ public class RedissonConfig {
     public RedissonClient redissonClient() {
         // 配置
         Config config = new Config();
-        // 这里由于虚拟机打开耗时且麻烦，使用本地Redis，并设置密码
-        config.useSingleServer().setAddress("redis://localhost:6379").setPassword("13801874064guoyu");
+        //这里使用的是虚拟机中Linux的IP地址，可以根据自己的情况设置相对应的地址
+        config.useSingleServer().setAddress("redis://192.168.255.129:6379").setPassword("13801874064guoyu");
         // 创建RedissonClient对象
         return Redisson.create(config);
     }
