@@ -212,6 +212,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
     @Override
     @Transactional
+    // 整个方法应该有统一的事务进行管理，当根据id清除Redis缓存的时候假如失败应该可以进行回滚
     public Result update(Shop shop) {
         Long id = shop.getId();
         if (id == null) {
