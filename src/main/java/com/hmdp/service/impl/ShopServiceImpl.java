@@ -42,8 +42,11 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
     @Override
     public Result queryById(Long id) {
-        // 缓存穿透
-        // Result result = queryWithPassThrough(id);
+        /* 缓存穿透
+         Result result = queryWithPassThrough(id);*/
+
+        // 互斥锁解决缓存击穿
+        // Shop shop = queryWithMutex(id);
 
         Shop shop = queryWithLogicalExpire(id);
         if (shop == null) {
@@ -54,7 +57,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         return Result.ok(shop);
     }
 
-    // 这里需要申明一个线程池，因为下面我们需要新建一个线程来完成重构缓存
+    // 这里需要申明一个线程池，因为下面我们需要新建一个线程来完成重构缓存(创建了十个线程)
     public static final ExecutorService CACHE_REBUILD_EXECUTOR = Executors.newFixedThreadPool(10);
 
 
@@ -130,7 +133,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
                 Thread.sleep(50);
                 return queryWithMutex(id);
             }
-            // 4.4 获取锁成功，根据ID查询数据库
+            // 4.4 走到这里代表获取锁成功，根据ID查询数据库
             shop = getById(id);
             // 模拟重建的延时
             Thread.sleep(200);
@@ -185,7 +188,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         return Result.ok(shop);
     }
 
-    // 获取锁
+    // 获取锁（相当于执行Redis中的setnx操作）
     private boolean tryLock(String key) {
         Boolean flag = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", 10, TimeUnit.SECONDS);
         // 为了避免返回值为null，我们这里使用了BooleanUtil工具类
