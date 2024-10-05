@@ -10,9 +10,11 @@ import java.util.concurrent.TimeUnit;
 
 public class SimpleRedisLock implements ILock {
 
+    // 不同的业务有不同的锁，因此锁的名称不能写死
     private final String name;
     private final StringRedisTemplate stringRedisTemplate;
 
+    // 给锁加统一前缀
     private static final String KEY_PREFIX = "lock:";
     private static final String ID_PREFIX = UUID.fastUUID().toString(true) + "-";
     private static final DefaultRedisScript<Long> UNLOCK_SCRIPT;
